@@ -1,0 +1,85 @@
+﻿@page "/admin/dashboard"
+@attribute [Authorize(Roles = "Admin")]
+
+@using HoaiEventManager.UseCases.Statistics
+@inject ViewDashboardStatsUseCase ViewDashboardStatsUseCase
+
+<h3>Dashboard</h3>
+<hr />
+
+@if (stats == null)
+{
+    <p><em>Đang tải dữ liệu thống kê...</em></p>
+}
+else
+{
+    <div class="row">
+        <!-- Card Tổng số người dùng -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng số người dùng</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.TotalUsers</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people-fill fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Tổng số sự kiện -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tổng số sự kiện</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.TotalEvents</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar-event fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Các card khác có thể thêm ở đây (Sắp diễn ra, đã diễn ra) -->
+
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Top 5 Sự kiện nhiều người đăng ký nhất</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        @foreach (var topEvent in stats.Top5EventsByRegistration)
+                        {
+                            <a href="/admin/events/@topEvent.EventId/attendees" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                @topEvent.EventName
+                                <span class="badge bg-primary rounded-pill">@topEvent.RegistrationCount</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    private DashboardStatsDto? stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        stats = await ViewDashboardStatsUseCase.ExecuteAsync();
+    }
+}

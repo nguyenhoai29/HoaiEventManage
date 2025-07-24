@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34902.65
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HoaiEventManager.CoreBusiness", "HoaiEventManager.CoreBusiness\HoaiEventManager.CoreBusiness.csproj", "{F683A2B6-9576-439D-8E5B-723F22355799}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HoaiEventManager.UseCases", "HoaiEventManager.UseCases\HoaiEventManager.UseCases.csproj", "{079D871D-C6E0-43FD-9F06-0AABB485E38F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HoaiEventManager.Infrastructure", "HoaiEventManager.Infrastructure\HoaiEventManager.Infrastructure.csproj", "{38F3176B-6AA1-4FB5-B97B-16F78BE442C8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HoaiEventManager.WebApp", "HoaiEventManager.WebApp\HoaiEventManager.WebApp.csproj", "{A0EB7E4A-752A-4D8B-8D0C-7C8163046685}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F683A2B6-9576-439D-8E5B-723F22355799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F683A2B6-9576-439D-8E5B-723F22355799}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F683A2B6-9576-439D-8E5B-723F22355799}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F683A2B6-9576-439D-8E5B-723F22355799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{079D871D-C6E0-43FD-9F06-0AABB485E38F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{079D871D-C6E0-43FD-9F06-0AABB485E38F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{079D871D-C6E0-43FD-9F06-0AABB485E38F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{079D871D-C6E0-43FD-9F06-0AABB485E38F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38F3176B-6AA1-4FB5-B97B-16F78BE442C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38F3176B-6AA1-4FB5-B97B-16F78BE442C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38F3176B-6AA1-4FB5-B97B-16F78BE442C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38F3176B-6AA1-4FB5-B97B-16F78BE442C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0EB7E4A-752A-4D8B-8D0C-7C8163046685}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0EB7E4A-752A-4D8B-8D0C-7C8163046685}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0EB7E4A-752A-4D8B-8D0C-7C8163046685}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0EB7E4A-752A-4D8B-8D0C-7C8163046685}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F1FF3A14-E9C2-4AC1-B3DB-596DE5BAB40D}
+	EndGlobalSection
+EndGlobal

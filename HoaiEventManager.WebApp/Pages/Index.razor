@@ -1,0 +1,61 @@
+﻿@page "/"
+@layout EmptyLayout
+@using HoaiEventManager.CoreBusiness.Models
+@using HoaiEventManager.UseCases.Events
+@inject ViewEventsUseCase ViewEventsUseCase
+
+<section class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-3">FESTIVAL ÂM NHẠC</h1>
+        <p class="lead">
+            Sự kiện âm nhạc lớn nhất hè 2025. Cùng cháy hết mình với những giai điệu sôi động và những nghệ sĩ hàng đầu.
+        </p>
+        <a href="events" class="btn btn-light hero-btn">Khám Phá Ngay</a>
+    </div>
+</section>
+
+<div class="container">
+    <section class="event-list-section py-5">
+        <h2 class="section-title text-center">Sự Kiện Nổi Bật</h2>
+
+        @if (featuredEvents == null)
+        {
+            <p class="text-center"><em>Đang tải sự kiện...</em></p>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var evt in featuredEvents)
+                {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card event-card">
+                            <a href="/events/@evt.Id" class="text-decoration-none">
+                                <img src="@(string.IsNullOrEmpty(evt.ImageUrl) ? $"https://placehold.co/600x400/6366f1/ffffff?text={Uri.EscapeDataString(evt.Name)}" : evt.ImageUrl)"
+                                     class="card-img-top" alt="[Hình ảnh của @evt.Name]">
+                            </a>
+                            <div class="card-body">
+                                <h5 class="card-title"><a href="/events/@evt.Id" class="text-dark text-decoration-none">@evt.Name</a></h5>
+                                <p class="card-text text-muted small mb-2"><i class="bi bi-calendar-event me-2"></i>@evt.Date.ToString("dd/MM/yyyy")</p>
+                                <p class="card-text text-muted small"><i class="bi bi-geo-alt-fill me-2"></i>@evt.Location</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="text-center mt-4">
+                <a href="/events" class="btn btn-outline-primary">Xem tất cả sự kiện <i class="bi bi-arrow-right"></i></a>
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    private List<Event>? featuredEvents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Lấy tất cả sự kiện và chỉ chọn 3 sự kiện đầu tiên để làm nổi bật
+        var allEvents = await ViewEventsUseCase.ExecuteAsync();
+        featuredEvents = allEvents.OrderByDescending(e => e.Date).Take(3).ToList();
+    }
+}

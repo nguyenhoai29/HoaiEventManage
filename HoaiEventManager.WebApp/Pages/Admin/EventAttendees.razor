@@ -1,0 +1,80 @@
+﻿@page "/admin/events/{EventId:int}/attendees"
+@attribute [Authorize(Roles = "Admin")]
+
+@using HoaiEventManager.CoreBusiness.Models
+@using HoaiEventManager.UseCases.Events
+@using HoaiEventManager.UseCases.Registrations
+@using HoaiEventManager.UseCases.DataTransferObjects // Thêm using này
+
+@inject ViewEventUseCase ViewEventUseCase
+@inject ViewAttendeesUseCase ViewAttendeesUseCase
+@inject NavigationManager NavigationManager
+
+@if (currentEvent == null)
+{
+    <p><em>Đang tải...</em></p>
+}
+else
+{
+    <h3>Danh sách tham dự: @currentEvent.Name</h3>
+    <p>
+        <button class="btn btn-secondary btn-sm" @onclick="GoBack">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </button>
+    </p>
+
+    @if (attendees == null)
+    {
+        <p><em>Đang tải danh sách...</em></p>
+    }
+    else if (!attendees.Any())
+    {
+        <p>Chưa có ai đăng ký sự kiện này.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Họ Tên</th>
+                    <th>Email</th>
+                    <th>Ngày Đăng Ký</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var attendee in attendees)
+                {
+                    <tr>
+                        <td>@attendee.FullName</td>
+                        <td>@attendee.Email</td>
+                        <td>@attendee.RegistrationDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private Event? currentEvent;
+    // Thay đổi kiểu dữ liệu của attendees
+    private IEnumerable<AttendeeDto>? attendees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentEvent = await ViewEventUseCase.ExecuteAsync(EventId);
+        if (currentEvent != null)
+        {
+            attendees = await ViewAttendeesUseCase.ExecuteAsync(EventId);
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/admin/events");
+    }
+}

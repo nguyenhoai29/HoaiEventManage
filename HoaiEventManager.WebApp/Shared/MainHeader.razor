@@ -1,0 +1,65 @@
+﻿@using HoaiEventManager.Infrastructure.Data
+@inject SignInManager<ApplicationUser> SignInManager
+
+<header>
+    <div class="top-bar">
+        <div class="container d-flex justify-content-between">
+            <div>
+                <i class="bi bi-telephone-fill me-1"></i> Hotline: 0357 347 917
+            </div>
+             <AuthorizeView>
+                <Authorized>
+                     <div class="d-flex align-items-center">
+                        <a href="Identity/Account/Manage" class="me-3">Xin chào, @context.User.Identity?.Name!</a>
+                        <span class="mx-1">|</span>
+                        <form action="Identity/Account/Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-link text-white p-0 ms-3" style="font-size: 0.875rem;">Đăng xuất</button>
+                        </form>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div>
+                        <a href="Identity/Account/Register" class="me-3">Đăng ký</a>
+                        <span class="mx-1">|</span>
+                        <a href="Identity/Account/Login" class="ms-3">Đăng nhập</a>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+    
+    <nav class="main-nav navbar navbar-expand-lg">
+        <div class="container">
+            <NavLink class="navbar-brand" href="/">HoaiEvent</NavLink>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><NavLink class="nav-link" href="/" Match="NavLinkMatch.All">Trang Chủ</NavLink></li>
+                    <li class="nav-item"><NavLink class="nav-link" href="events">Sự Kiện</NavLink></li>
+                    <AuthorizeView>
+                         <Authorized>
+                             <li class="nav-item"><NavLink class="nav-link" href="my-events">Sự kiện của tôi</NavLink></li>
+                         </Authorized>
+                    </AuthorizeView>
+                     <AuthorizeView Roles="Admin">
+                        <li class="nav-item"><NavLink class="nav-link" href="admin/events">Quản Lý</NavLink></li>
+                     </AuthorizeView>
+                    <AuthorizeView Roles="Admin">
+                        <li class="nav-item"><NavLink class="nav-link" href="admin/dashboard">Dashboard</NavLink></li>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Admin">
+                        <li class="nav-item"><NavLink class="nav-link" href="admin/events/create">Thêm sự kiện</NavLink></li>
+                    </AuthorizeView>
+                </ul>
+
+                <div class="d-flex align-items-center">
+                    <div class="search-bar position-relative me-3">
+                        <i class="bi bi-search search-icon"></i>
+                        <input class="form-control" type="search" placeholder="Tìm kiếm sự kiện...">
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </nav>
+</header>

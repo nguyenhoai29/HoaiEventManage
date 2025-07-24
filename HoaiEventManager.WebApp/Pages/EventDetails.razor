@@ -1,0 +1,95 @@
+﻿@page "/events/{EventId:int}"
+@using HoaiEventManager.CoreBusiness.Models
+@using HoaiEventManager.UseCases.Events
+@inject ViewEventUseCase ViewEventUseCase
+@inject NavigationManager Navigation
+
+<div class="container-fluid p-0">
+    @if (currentEvent == null)
+    {
+        <p class="text-center p-5"><em>Đang tải chi tiết sự kiện...</em></p>
+    }
+    else
+    {
+        <!-- Event Banner -->
+        <div class="event-banner" style="background-image: url('@(string.IsNullOrEmpty(currentEvent.ImageUrl) ? $"https://placehold.co/1920x600/4f46e5/ffffff?text={Uri.EscapeDataString(currentEvent.Name)}" : currentEvent.ImageUrl)');">
+            <div class="event-banner-overlay">
+                <h1 class="event-title">@currentEvent.Name</h1>
+            </div>
+        </div>
+
+        <div class="container mt-4">
+            <div class="row">
+                <!-- Cột thông tin chi tiết -->
+                <div class="col-lg-8">
+                    <h4>Mô tả sự kiện</h4>
+                    <p style="white-space: pre-wrap;">@currentEvent.Description</p>
+                </div>
+                <!-- Cột thông tin đăng ký -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm sticky-top" style="top: 20px;">
+                        <div class="card-body">
+                            <h5 class="card-title">Thông Tin & Đăng Ký</h5>
+                            <hr>
+                            <p><strong><i class="bi bi-calendar-event"></i> Thời gian:</strong> @currentEvent.Date.ToString("dddd, dd/MM/yyyy 'lúc' HH:mm")</p>
+                            <p><strong><i class="bi bi-geo-alt-fill"></i> Địa điểm:</strong> @currentEvent.Location</p>
+                            <p><strong><i class="bi bi-ticket-perforated"></i> Giới hạn vé:</strong> @currentEvent.TicketLimit</p>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <AuthorizeView>
+                                    <Authorized>
+                                        <RegistrationButton EventId="@EventId" />
+                                    </Authorized>
+                                    <NotAuthorized>
+                                        <a href="Identity/Account/Login?returnUrl=@(Uri.EscapeDataString(Navigation.Uri))" class="btn btn-danger btn-lg">
+                                            Đăng nhập để đăng ký
+                                        </a>
+                                    </NotAuthorized>
+                                </AuthorizeView>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .event-banner {
+        height: 400px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        color: white;
+    }
+
+    .event-banner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2));
+        display: flex;
+        align-items: flex-end;
+        padding: 2rem;
+    }
+
+    .event-title {
+        font-weight: 700;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private Event? currentEvent;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        currentEvent = await ViewEventUseCase.ExecuteAsync(EventId);
+    }
+}

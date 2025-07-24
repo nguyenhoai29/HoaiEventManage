@@ -1,0 +1,56 @@
+﻿@page "/events"
+@using HoaiEventManager.CoreBusiness.Models
+@using HoaiEventManager.UseCases.Events
+@inject ViewEventsUseCase ViewEventsUseCase
+@inject NavigationManager NavigationManager
+
+<div class="container mt-4">
+    <h1 class="mb-4">Danh Sách Sự Kiện</h1>
+
+    @if (events == null)
+    {
+        <p><em>Đang tải...</em></p>
+    }
+    else if (!events.Any())
+    {
+        <p>Hiện chưa có sự kiện nào.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var evt in events)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@(string.IsNullOrEmpty(evt.ImageUrl) ? $"https://placehold.co/600x400/3b82f6/ffffff?text={Uri.EscapeDataString(evt.Name)}" : evt.ImageUrl)"
+                             class="card-img-top" alt="Hình ảnh sự kiện @evt.Name" style="height: 200px; object-fit: cover;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@evt.Name</h5>
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-calendar-event"></i> @evt.Date.ToString("dd/MM/yyyy")
+                            </p>
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-geo-alt-fill"></i> @evt.Location
+                            </p>
+                            <a @onclick="() => NavigateToDetails(evt.Id)" class="btn btn-primary mt-auto stretched-link" style="cursor:pointer;">Xem Chi Tiết</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Event>? events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = (await ViewEventsUseCase.ExecuteAsync()).ToList();
+    }
+
+    private void NavigateToDetails(int eventId)
+    {
+        NavigationManager.NavigateTo($"/events/{eventId}");
+    }
+}

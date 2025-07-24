@@ -1,0 +1,137 @@
+﻿@page "/admin/events/edit/{EventId:int}"
+@attribute [Authorize(Roles = "Admin")]
+
+@using HoaiEventManager.CoreBusiness.Models
+@using HoaiEventManager.UseCases.Events
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Hosting
+
+@inject ViewEventUseCase ViewEventUseCase
+@inject UpdateEventUseCase UpdateEventUseCase
+@inject NavigationManager NavigationManager
+@inject Blazored.Toast.Services.IToastService ToastService
+@inject IWebHostEnvironment WebHostEnvironment
+
+<h3>Chỉnh Sửa Sự Kiện</h3>
+<hr />
+
+@if (eventToEdit == null)
+{
+    <p><em>Đang tải sự kiện...</em></p>
+}
+else
+{
+    <EditForm Model="@eventToEdit" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Tên Sự Kiện</label>
+            <InputText id="name" class="form-control" @bind-Value="eventToEdit.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label for="date" class="form-label">Ngày Diễn Ra</label>
+            <InputDate id="date" class="form-control" @bind-Value="eventToEdit.Date" />
+        </div>
+
+        <div class="mb-3">
+            <label for="location" class="form-label">Địa Điểm</label>
+            <InputText id="location" class="form-control" @bind-Value="eventToEdit.Location" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Hình Ảnh Hiện Tại</label>
+            @if (!string.IsNullOrEmpty(eventToEdit.ImageUrl))
+            {
+                <div>
+                    <img src="@eventToEdit.ImageUrl" class="mb-2" style="max-width: 200px; max-height: 200px; border-radius: 5px;" alt="Ảnh hiện tại" />
+                </div>
+            }
+            else
+            {
+                <p class="text-muted"><em>Chưa có hình ảnh.</em></p>
+            }
+            <label for="image" class="form-label mt-2">Chọn ảnh mới để thay thế</label>
+            <InputFile id="image" class="form-control" OnChange="HandleFileSelected" />
+        </div>
+
+        <div class="mb-3">
+            <label for="ticketLimit" class="form-label">Giới Hạn Vé</label>
+            <InputNumber id="ticketLimit" class="form-control" @bind-Value="eventToEdit.TicketLimit" />
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Mô Tả</label>
+            <InputTextArea id="description" class="form-control" rows="5" @bind-Value="eventToEdit.Description" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Hủy Bỏ</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private Event? eventToEdit;
+    private IBrowserFile? selectedFile;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (eventToEdit == null || eventToEdit.Id != EventId)
+        {
+            eventToEdit = await ViewEventUseCase.ExecuteAsync(EventId);
+        }
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (eventToEdit == null) return;
+
+        // Xử lý upload file mới nếu người dùng đã chọn
+        if (selectedFile != null)
+        {
+            // Xóa file ảnh cũ nếu có để tiết kiệm dung lượng
+            if (!string.IsNullOrEmpty(eventToEdit.ImageUrl))
+            {
+                var oldImagePath = Path.Combine(WebHostEnvironment.WebRootPath, eventToEdit.ImageUrl.TrimStart('/'));
+                if (File.Exists(oldImagePath))
+                {
+                    File.Delete(oldImagePath);
+                }
+            }
+
+            var uploadPath = Path.Combine(WebHostEnvironment.WebRootPath, "images", "events");
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(selectedFile.Name)}";
+            var fullPath = Path.Combine(uploadPath, fileName);
+
+            await using var stream = selectedFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // Giới hạn 5MB
+            await using var fs = new FileStream(fullPath, FileMode.Create);
+            await stream.CopyToAsync(fs);
+
+            // Cập nhật đường dẫn ảnh mới
+            eventToEdit.ImageUrl = $"/images/events/{fileName}";
+        }
+
+        await UpdateEventUseCase.ExecuteAsync(eventToEdit);
+        ToastService.ShowSuccess("Sự kiện đã được cập nhật thành công!");
+        NavigationManager.NavigateTo("/admin/events");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/admin/events");
+    }
+}

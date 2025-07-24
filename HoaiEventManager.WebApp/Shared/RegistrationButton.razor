@@ -1,0 +1,96 @@
+﻿@using HoaiEventManager.UseCases.Registrations
+@using HoaiEventManager.UseCases.Interfaces
+@using System.Security.Claims
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject RegisterForEventUseCase RegisterForEventUseCase
+@inject UnregisterForEventUseCase UnregisterForEventUseCase
+@inject IRegistrationRepository RegistrationRepository
+@inject IToastService ToastService
+
+@if (isLoading)
+{
+    <button class="btn btn-secondary w-100" disabled>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Đang kiểm tra...
+    </button>
+}
+else if (isRegistered)
+{
+    // Hiển thị nút Hủy đăng ký nếu đã đăng ký
+    <button class="btn btn-danger w-100" @onclick="HandleUnregister">
+        <i class="bi bi-x-circle"></i> Hủy Đăng Ký
+    </button>
+}
+else
+{
+    // Hiển thị nút Đăng ký nếu chưa đăng ký
+    <button class="btn btn-primary w-100" @onclick="HandleRegister">
+        <i class="bi bi-check-circle"></i> Đăng Ký Ngay
+    </button>
+}
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private bool isLoading = true;
+    private bool isRegistered = false;
+    private string? currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            currentUserId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId != null)
+            {
+                isRegistered = await RegistrationRepository.IsUserRegisteredAsync(EventId, currentUserId);
+            }
+        }
+        isLoading = false;
+    }
+
+    private async Task HandleRegister()
+    {
+        if (currentUserId == null)
+        {
+            ToastService.ShowError("Không thể xác định người dùng. Vui lòng đăng nhập lại.");
+            return;
+        }
+
+        try
+        {
+            await RegisterForEventUseCase.ExecuteAsync(EventId, currentUserId);
+            isRegistered = true;
+            ToastService.ShowSuccess("Đăng ký tham gia sự kiện thành công!");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError(ex.Message);
+        }
+    }
+
+    private async Task HandleUnregister()
+    {
+        if (currentUserId == null)
+        {
+            ToastService.ShowError("Không thể xác định người dùng. Vui lòng đăng nhập lại.");
+            return;
+        }
+
+        try
+        {
+            await UnregisterForEventUseCase.ExecuteAsync(EventId, currentUserId);
+            isRegistered = false;
+            ToastService.ShowInfo("Bạn đã hủy đăng ký sự kiện thành công.");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError(ex.Message);
+        }
+    }
+}

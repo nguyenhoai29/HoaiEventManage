@@ -1,0 +1,126 @@
+﻿@page "/admin/events/create"
+@attribute [Authorize(Roles = "Admin")]
+
+@using HoaiEventManager.CoreBusiness.Models
+@using HoaiEventManager.UseCases.Events
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Hosting
+
+@inject CreateEventUseCase CreateEventUseCase
+@inject ViewEventUseCase ViewEventUseCase
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject Blazored.Toast.Services.IToastService ToastService
+@inject IWebHostEnvironment WebHostEnvironment
+
+<h3>Tạo Sự Kiện Mới</h3>
+<hr />
+
+<EditForm Model="@newEvent" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Tên Sự Kiện</label>
+        <InputText id="name" class="form-control" @bind-Value="newEvent.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label for="date" class="form-label">Ngày Diễn Ra</label>
+        <InputDate id="date" class="form-control" @bind-Value="newEvent.Date" />
+    </div>
+
+    <div class="mb-3">
+        <label for="location" class="form-label">Địa Điểm</label>
+        <InputText id="location" class="form-control" @bind-Value="newEvent.Location" />
+    </div>
+
+    <div class="mb-3">
+        <label for="image" class="form-label">Hình Ảnh Đại Diện</label>
+        <InputFile id="image" class="form-control" OnChange="HandleFileSelected" />
+    </div>
+
+    <div class="mb-3">
+        <label for="ticketLimit" class="form-label">Giới Hạn Vé</label>
+        <InputNumber id="ticketLimit" class="form-control" @bind-Value="newEvent.TicketLimit" />
+    </div>
+
+    <div class="mb-3">
+        <label for="description" class="form-label">Mô Tả</label>
+        <InputTextArea id="description" class="form-control" rows="5" @bind-Value="newEvent.Description" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Hủy Bỏ</button>
+
+</EditForm>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int? cloneFrom { get; set; }
+
+    private Event newEvent = new Event();
+    private IBrowserFile? selectedFile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (cloneFrom.HasValue)
+        {
+            var eventToClone = await ViewEventUseCase.ExecuteAsync(cloneFrom.Value);
+            if (eventToClone != null)
+            {
+                // Sao chép dữ liệu từ sự kiện cũ sang sự kiện mới
+                newEvent = new Event
+                    {
+                        Name = eventToClone.Name + " (Bản sao)",
+                        Location = eventToClone.Location,
+                        Description = eventToClone.Description,
+                        TicketLimit = eventToClone.TicketLimit,
+                        Date = DateTime.Now // Đặt ngày mặc định là hiện tại
+                    };
+            }
+        }
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (selectedFile != null)
+        {
+            var uploadPath = Path.Combine(WebHostEnvironment.WebRootPath, "images", "events");
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(selectedFile.Name)}";
+            var fullPath = Path.Combine(uploadPath, fileName);
+
+            await using var stream = selectedFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // Giới hạn 5MB
+            await using var fs = new FileStream(fullPath, FileMode.Create);
+            await stream.CopyToAsync(fs);
+
+            newEvent.ImageUrl = $"/images/events/{fileName}";
+        }
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        newEvent.CreatedById = userId;
+
+        await CreateEventUseCase.ExecuteAsync(newEvent);
+        ToastService.ShowSuccess("Sự kiện đã được tạo thành công!");
+        NavigationManager.NavigateTo("/admin/events");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/admin/events");
+    }
+}
